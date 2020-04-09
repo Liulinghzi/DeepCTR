@@ -170,8 +170,7 @@ def create_embedding_matrix(feature_columns, l2_reg, init_std, seed, prefix="", 
 
 def get_linear_logit(features, feature_columns, units=1, use_bias=False, init_std=0.0001, seed=1024, prefix='linear',
                      l2_reg=0):
-    linear_emb_list = [input_from_feature_columns(features, feature_columns, l2_reg, init_std, seed,
-                                                  prefix=prefix + str(i))[0] for i in range(units)]
+    linear_emb_list = [input_from_feature_columns(features, feature_columns, l2_reg, init_std, seed, prefix=prefix + str(i))[0] for i in range(units)]
     _, dense_input_list = input_from_feature_columns(features, feature_columns, l2_reg, init_std, seed, prefix=prefix)
 
     linear_logit_list = []

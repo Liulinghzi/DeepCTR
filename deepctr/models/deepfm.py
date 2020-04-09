@@ -1,3 +1,11 @@
+'''
+@Author: your name
+@Date: 2020-04-09 18:11:17
+@LastEditTime: 2020-04-09 21:36:45
+@LastEditors: Please set LastEditors
+@Description: In User Settings Edit
+@FilePath: /DeepCTR/deepctr/models/deepfm.py
+'''
 # -*- coding:utf-8 -*-
 """
 Author:
@@ -8,15 +16,15 @@ Reference:
 
 """
 
+
+
+
 from itertools import chain
 import tensorflow as tf
-
 from ..inputs import input_from_feature_columns, get_linear_logit, build_input_features, combined_dnn_input, DEFAULT_GROUP_NAME
 from ..layers.core import PredictionLayer, DNN
 from ..layers.interaction import FM
 from ..layers.utils import concat_func, add_func
-
-
 def DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=[DEFAULT_GROUP_NAME], dnn_hidden_units=(128, 128),
            l2_reg_linear=0.00001, l2_reg_embedding=0.00001, l2_reg_dnn=0, init_std=0.0001, seed=1024, dnn_dropout=0,
            dnn_activation='relu', dnn_use_bn=False, task='binary'):
@@ -46,11 +54,23 @@ def DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=[DEFAULT_GROUP_
     group_embedding_dict, dense_value_list = input_from_feature_columns(features, dnn_feature_columns, l2_reg_embedding,
                                                                         init_std, seed, support_group=True)
 
+    # ============== Deep FM 主体三大部分 =================
+
+    # ============== 第一部分 =================
+    # ============== 线性部分 =================
     linear_logit = get_linear_logit(features, linear_feature_columns, init_std=init_std, seed=seed, prefix='linear',
                                     l2_reg=l2_reg_linear)
-    fm_logit = add_func([FM()(concat_func(v, axis=1))
-                         for k, v in group_embedding_dict.items() if k in fm_group])
+    # ============== 第二部分 =================
+    # ============== FM部分 =================
+    fm_logit = add_func(
+        [
+            FM()(concat_func(v, axis=1))
+            for k, v in group_embedding_dict.items() if k in fm_group
+        ]
+    )
 
+    # ============== 第三部分 =================
+    # ============== DNN部分 =================
     dnn_input = combined_dnn_input(list(chain.from_iterable(
         group_embedding_dict.values())), dense_value_list)
     dnn_output = DNN(dnn_hidden_units, dnn_activation, l2_reg_dnn, dnn_dropout,
@@ -58,6 +78,7 @@ def DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=[DEFAULT_GROUP_
     dnn_logit = tf.keras.layers.Dense(
         1, use_bias=False, activation=None)(dnn_output)
 
+    # 三部分相加
     final_logit = add_func([linear_logit, fm_logit, dnn_logit])
 
     output = PredictionLayer(task)(final_logit)
