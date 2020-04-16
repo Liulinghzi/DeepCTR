@@ -427,8 +427,21 @@ class FM(Layer):
 
         concated_embeds_value = inputs
 
+        # 真正的外部输入：sparse特征label encode之后的id，
+        # xi: embedding层中的每一行的index是一个xi
+        # vi: embedding层中的每一行的向量是一个vi
+        # vif: vi的每一个元素为一个vif
+        # ==》
+        # concated_embeds_value是多个vi的拼接
+        # 在理论公式中，xi只有0，1的选项，而如果xi为0，则这个向量不会被选中，也就不会出现在concated_embeds_value当中，
+        #   所以这里的concated_embeds_value中的每一个值，其实都是vif·xi的结果
+        # ==》
+        # 1.和的平方
+        # 2.平方的和：很好理解了
         square_of_sum = tf.square(reduce_sum(
             concated_embeds_value, axis=1, keep_dims=True))
+        
+        
         sum_of_square = reduce_sum(
             concated_embeds_value * concated_embeds_value, axis=1, keep_dims=True)
         cross_term = square_of_sum - sum_of_square

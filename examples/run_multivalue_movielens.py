@@ -1,3 +1,11 @@
+'''
+@Author: your name
+@Date: 2020-04-09 18:11:17
+@LastEditTime: 2020-04-14 17:40:45
+@LastEditors: Please set LastEditors
+@Description: In User Settings Edit
+@FilePath: /DeepCTR/examples/run_multivalue_movielens.py
+'''
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -65,3 +73,4 @@ if __name__ == "__main__":
     model.compile("adam", "mse", metrics=['mse'], )
     history = model.fit(model_input, data[target].values,
                         batch_size=256, epochs=10, verbose=2, validation_split=0.2, )
+    print(model.predict(model_input))

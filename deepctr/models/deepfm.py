@@ -1,7 +1,7 @@
 '''
 @Author: your name
 @Date: 2020-04-09 18:11:17
-@LastEditTime: 2020-04-09 21:36:45
+@LastEditTime: 2020-04-15 13:10:19
 @LastEditors: Please set LastEditors
 @Description: In User Settings Edit
 @FilePath: /DeepCTR/deepctr/models/deepfm.py
@@ -54,16 +54,35 @@ def DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=[DEFAULT_GROUP_
     group_embedding_dict, dense_value_list = input_from_feature_columns(features, dnn_feature_columns, l2_reg_embedding,
                                                                         init_std, seed, support_group=True)
 
+    # ！！！重点：
+    # dnn和fm的embedding矩阵是共享的group_embedding_dict
+    # linear是自己的
     # ============== Deep FM 主体三大部分 =================
 
     # ============== 第一部分 =================
     # ============== 线性部分 =================
+    # 线性部分和FM部分其实是理论FM拆分之后的两个部分，
+    # 理论FM w0 + w1x1 + ... + v1v2x1x2
+    # 代码线性部分就是w0 + w1x1 + ...部分，
+    # 代码FM部分就是v1v2x1x2 ...部分
     linear_logit = get_linear_logit(features, linear_feature_columns, init_std=init_std, seed=seed, prefix='linear',
                                     l2_reg=l2_reg_linear)
     # ============== 第二部分 =================
     # ============== FM部分 =================
+    # 如果看不懂这个函数，就在进行一遍公式推导
+    # add_func对应最外层，针对向量每个维度的累加
+    # fm_group用来对特征进行分组，只有组内的特征才会进行FM交叉，在简单情况下只有一个fm分组，暂时不管
+    # 把所有特征的embedding concat起来，形成一个系数矩阵，作为FM的输入
     fm_logit = add_func(
         [
+            # 这里的concat_func并不是拼接成了flatten的向量
+            # 而是拼接成了
+            # [
+            #     [v11,v12,v13],
+            #     [v21,v22,v23]
+            # ]
+            # 所以再算和的平方的时候，sum(axis=1)，就会计算得到
+            # [v11 + v21, v12 + v22, v13 + v23]
             FM()(concat_func(v, axis=1))
             for k, v in group_embedding_dict.items() if k in fm_group
         ]

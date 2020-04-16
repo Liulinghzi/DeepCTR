@@ -22,3 +22,5 @@
     
     3和4的区别在于3中根据dense value的取值会分配到不同的embedding vector，而4中的不同的dense value只有一个embedding vector
 
+
+
