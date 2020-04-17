@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-04-09 21:48:04
- * @LastEditTime: 2020-04-09 21:54:23
+ * @LastEditTime: 2020-04-16 11:51:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /DeepCTR/模型使用经验/deepfm.md
@@ -10,9 +10,10 @@
 
 # 数据预处理
 1. 数值特征
-    1. 归一化后直接输入dnn部分，不参与fm部分交叉（原生deepfm）
+    1. *归一化* 后直接输入dnn部分，不参与fm部分交叉（原生deepfm),
         
         a. 可以考虑分箱后再归一化
+        b. 归一化很重要，因为sparse特征在embedding之后尺度在0-1,需要把dense特征缩放到这个尺度
 
     2. 不归一化经过bn后输入dnn，不参与fm部分交叉
 

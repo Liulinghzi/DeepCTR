@@ -1,7 +1,7 @@
 '''
 @Author: your name
 @Date: 2020-04-09 18:11:17
-@LastEditTime: 2020-04-15 13:10:19
+@LastEditTime: 2020-04-16 13:19:16
 @LastEditors: Please set LastEditors
 @Description: In User Settings Edit
 @FilePath: /DeepCTR/deepctr/models/deepfm.py
@@ -45,7 +45,11 @@ def DeepFM(linear_feature_columns, dnn_feature_columns, fm_group=[DEFAULT_GROUP_
     :param task: str, ``"binary"`` for  binary logloss or  ``"regression"`` for regression loss
     :return: A Keras model instance.
     """
-
+    # ！！！
+    # 在外部定义了一遍Input
+        # 外部的Input可能只是想要通过dict.key的方式去重，以及扩展varlen
+    # 在内部又定义了一遍Input
+        # 这里才是真正用到的
     features = build_input_features(
         linear_feature_columns + dnn_feature_columns)
 
