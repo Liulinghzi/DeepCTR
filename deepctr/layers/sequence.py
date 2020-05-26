@@ -63,6 +63,8 @@ class SequencePoolingLayer(Layer):
                 raise ValueError(
                     "When supports_masking=True,input must support masking")
             uiseq_embed_list = seq_value_len_list
+            # [id1_emb, id2_emb]
+            
             mask = tf.cast(mask,tf.float32)#                tf.to_float(mask)
             user_behavior_length = reduce_sum(mask, axis=-1, keep_dims=True)
             mask = tf.expand_dims(mask, axis=2)
@@ -251,6 +253,9 @@ class AttentionSequencePoolingLayer(Layer):
                     "When supports_masking=True,input must support masking")
             queries, keys = inputs
             key_masks = tf.expand_dims(mask[-1], axis=1)
+            # query_emb_list [queryemb1_queryemb2]
+            # keys_emb_list [ [keyemb1_keyemb2],
+            #                 [keyemb1_keyemb2]]
 
         else:
 
@@ -259,8 +264,10 @@ class AttentionSequencePoolingLayer(Layer):
             key_masks = tf.sequence_mask(keys_length, hist_len)
 
         attention_score = self.local_att([queries, keys], training=training)
+        # [bs, T, 1]
 
         outputs = tf.transpose(attention_score, (0, 2, 1))
+        # [bs, 1, T]
 
         if self.weight_normalization:
             paddings = tf.ones_like(outputs) * (-2 ** 32 + 1)

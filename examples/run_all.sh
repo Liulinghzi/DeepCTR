@@ -1,5 +1,12 @@
+###
+ # @Author: your name
+ # @Date: 2020-04-09 18:11:17
+ # @LastEditTime: 2020-05-21 14:03:06
+ # @LastEditors: Please set LastEditors
+ # @Description: In User Settings Edit
+ # @FilePath: /DeepCTR/examples/run_all.sh
+### 
 #!/usr/bin/env bash
-
 function run_py(){
 
     code_path=./

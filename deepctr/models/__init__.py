@@ -1,8 +1,17 @@
+'''
+@Author: your name
+@Date: 2020-04-09 18:11:17
+@LastEditTime: 2020-05-07 13:42:48
+@LastEditors: your name
+@Description: In User Settings Edit
+@FilePath: /code learn/DeepCTR/deepctr/models/__init__.py
+'''
 from .afm import AFM
 from .autoint import AutoInt
 from .ccpm import CCPM
 from .dcn import DCN
 from .deepfm import DeepFM
+from .multi_deepfm import MultiDeepFM
 from .dien import DIEN
 from .din import DIN
 from .fnn import FNN

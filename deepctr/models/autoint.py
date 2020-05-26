@@ -1,3 +1,11 @@
+'''
+@Author: your name
+@Date: 2020-04-09 18:11:17
+@LastEditTime: 2020-05-22 17:12:31
+@LastEditors: Please set LastEditors
+@Description: In User Settings Edit
+@FilePath: /DeepCTR/deepctr/models/autoint.py
+'''
 # -*- coding:utf-8 -*-
 """
 
@@ -54,7 +62,9 @@ def AutoInt(linear_feature_columns, dnn_feature_columns, att_layer_num=3, att_em
     linear_logit = get_linear_logit(features, linear_feature_columns, init_std=init_std, seed=seed, prefix='linear',
                                     l2_reg=l2_reg_linear)
 
+    # sparse_embedding_list features*[bs, 1, dim]
     att_input = concat_func(sparse_embedding_list, axis=1)
+    # sparse_embedding_list [bs, 1, features*dim]
 
     for _ in range(att_layer_num):
         att_input = InteractingLayer(

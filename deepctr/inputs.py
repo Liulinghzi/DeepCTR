@@ -234,10 +234,19 @@ def embedding_lookup(sparse_embedding_dict, sparse_input_dict, sparse_feature_co
             # 这里lookup_idx其实就是一个feature的Input()的值
             # sparse_embedding_dict[embedding_name]是这个feature对应的embedding矩阵
             # 从embedding矩阵中，获取值对应的向量
+
+            # group_embedding_dict里面的每一个value是一个
+            # [bs, 1, dim]的embedding
+            # 或者seq
+            # [bs, T, dim]的embedding
             group_embedding_dict[fc.group_name].append(
                 sparse_embedding_dict[embedding_name](lookup_idx))
     if to_list:
+        # 这里会把dict的层级结构拉平，把所有的元素放在一个list里面
+        # 单值 lookup => [bs, 1, dim] * features
+        # seq lookup => [bs, T, dim] * features
         return list(chain.from_iterable(group_embedding_dict.values()))
+
     return group_embedding_dict
 
 
@@ -257,6 +266,9 @@ def varlen_embedding_lookup(embedding_dict, sequence_input_dict, varlen_sparse_f
 
 
 def get_varlen_pooling_list(embedding_dict, features, varlen_sparse_feature_columns, to_list=False):
+    # embedding_dict内存的的是
+    # varlen_feature1 : [id1_emb, id2_emb]
+    # varlen_feature2 : [id1_emb, id2_emb]
     pooling_vec_list = defaultdict(list)
     for fc in varlen_sparse_feature_columns:
         feature_name = fc.name
@@ -276,8 +288,12 @@ def get_varlen_pooling_list(embedding_dict, features, varlen_sparse_feature_colu
                     [embedding_dict[feature_name], features[fc.weight_name]])
             else:
                 seq_input = embedding_dict[feature_name]
+                # embedding_dict[feature_name]取出dict的一组[id1_emb, id2_emb]
             vec = SequencePoolingLayer(combiner, supports_masking=True)(
                 seq_input)
+            # 对一组seq进行pool，
+            # 普通的pool就是mean，这里varlen sparse feature中combiner的默认值也是mean
+            # 但是din中的pool应该是attention pool呀？？？？？
         pooling_vec_list[fc.group_name].append(vec)
         if to_list:
             return chain.from_iterable(pooling_vec_list.values())

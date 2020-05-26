@@ -1,7 +1,7 @@
 '''
 @Author: your name
 @Date: 2020-04-09 18:11:17
-@LastEditTime: 2020-04-14 17:40:45
+@LastEditTime: 2020-04-26 15:53:17
 @LastEditors: Please set LastEditors
 @Description: In User Settings Edit
 @FilePath: /DeepCTR/examples/run_multivalue_movielens.py
@@ -24,7 +24,7 @@ def split(x):
     return list(map(lambda x: key2index[x], key_ans))
 
 if __name__ == "__main__":
-    data = pd.read_csv("./movielens_sample.txt")
+    data = pd.read_csv("./DeepCTR/examples/movielens_sample.txt")
     sparse_features = ["movie_id", "user_id",
                        "gender", "age", "occupation", "zip", ]
     target = ['rating']
@@ -62,10 +62,7 @@ if __name__ == "__main__":
 
 
     # 3.generate input data for model
-    model_input = {name:data[name] for name in sparse_features}#
-    model_input["genres"] = genres_list
-    model_input["genres_weight"] =  np.random.randn(data.shape[0],max_len,1)
-
+    model_input = {name:data[name].values for name in sparse_features}#
 
     # 4.Define Model,compile and train
     model = DeepFM(linear_feature_columns,dnn_feature_columns,task='regression')

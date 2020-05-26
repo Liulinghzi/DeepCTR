@@ -595,10 +595,12 @@ class InteractingLayer(Layer):
             raise ValueError(
                 "Unexpected inputs dimensions %d, expect to be 3 dimensions" % (K.ndim(inputs)))
 
+        # inputs [bs, 1, features*dim]
         querys = tf.tensordot(inputs, self.W_Query,
                               axes=(-1, 0))  # None F D*head_num
         keys = tf.tensordot(inputs, self.W_key, axes=(-1, 0))
         values = tf.tensordot(inputs, self.W_Value, axes=(-1, 0))
+        # qkv [bs, 1, numhead*newdim]
 
         # head_num None F D
         querys = tf.stack(tf.split(querys, self.head_num, axis=2))
@@ -607,6 +609,7 @@ class InteractingLayer(Layer):
 
         inner_product = tf.matmul(
             querys, keys, transpose_b=True)  # head_num None F F
+
         self.normalized_att_scores = softmax(inner_product)
 
         result = tf.matmul(self.normalized_att_scores,

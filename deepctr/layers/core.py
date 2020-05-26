@@ -81,6 +81,11 @@ class LocalActivationUnit(Layer):
 
         self.dense = tf.keras.layers.Lambda(lambda x:tf.nn.bias_add(tf.tensordot(
             x[0], x[1], axes=(-1, 0)), x[2]))
+        # 理清楚tensordot和matmul之间的区别
+        # 	1. matmul在a·b中，只能把a的最后一个维度和b的倒数第二个维度乘在一起
+        # 	2. tensordot可以指定，其实就是把指定的维度交换到最后一个维度，然后尽心matmul
+        # att_out和self.kernel  进行tensordot
+        # axis作为-1和0，其实就和matmul没有任何区别
 
         super(LocalActivationUnit, self).build(
             input_shape)  # Be sure to call this somewhere!
@@ -88,16 +93,29 @@ class LocalActivationUnit(Layer):
     def call(self, inputs, training=None, **kwargs):
 
         query, keys = inputs
+        # query: [bs, 1, features*dim]
+        # keys:  [bs, T, features*dim]
 
-        keys_len = keys.get_shape()[1]
-        queries = K.repeat_elements(query, keys_len, 1)
+        keys_len = keys.get_shape()[1] # T
+        queries = K.repeat_elements(query, keys_len, 1) # 把query重复T次 成[bs, T, features*dim]
 
         att_input = tf.concat(
             [queries, keys, queries - keys, queries * keys], axis=-1)
+        # 拼接成 [bs, T, 4*feature*dim]
 
         att_out = self.dnn(att_input, training=training)
+        # 处理成 [bs, T, hidden]
 
+
+        # lambda x:tf.nn.bias_add(tf.tensordot(x[0], x[1], axes=(-1, 0)), x[2])
+        # att_out 和 self.kernel做tensordot
         attention_score = self.dense([att_out,self.kernel,self.bias])
+        # 从这里可以看出来，和transformer的self Attention的定义并不一样，
+        # self Attention中
+        #   计算query和所有key的点乘，然后softmax后，每一个query有一个seqlen的score，用这个score加权所有的key，得到了Attention之后的query
+        # Din中
+        #   把query和key拼起来计算一个[bs, T],也是seqlen长度的序列
+        #   按理来说一个dense层是能捕捉输入的query和key之间的关系的
 
         return attention_score
 
