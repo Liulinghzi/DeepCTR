@@ -123,6 +123,8 @@ def concat_func(inputs, axis=-1, mask=False):
         return inputs[0]
     else:
         return tf.keras.layers.Concatenate(axis=axis)(inputs)
+        # Dense层的embedding处理方式是concate起来，再reduce_meam，但是这里的concate为什么axis是-1
+        # 一个特征的embedding是[bs, 1, dim],多个特征在-1上的concate就是[bs, 1, n*dim]
 
 
 def reduce_mean(input_tensor,

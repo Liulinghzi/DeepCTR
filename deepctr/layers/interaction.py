@@ -373,7 +373,8 @@ class CrossNet(Layer):
             raise ValueError(
                 "Unexpected inputs dimensions %d, expect to be 2 dimensions" % (K.ndim(inputs)))
 
-        x_0 = tf.expand_dims(inputs, axis=2)
+        x_0 = tf.expand_dims(inputs, axis=2) # bs, dim, 1
+
         x_l = x_0
         for i in range(self.layer_num):
             xl_w = tf.tensordot(x_l, self.kernels[i], axes=(1, 0))
