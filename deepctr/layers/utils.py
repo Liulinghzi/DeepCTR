@@ -97,7 +97,8 @@ class Linear(tf.keras.layers.Layer):
             linear_logit = self.dense(dense_input)
         else:
             sparse_input, dense_input = inputs
-
+            # sparse_input为 [bs, num_features*dims]
+            # sparse featrue也维护一个embeddign矩阵，但是每次lookup之后，只是把所有的embedidng向量累加为标量，意义是什么？？
             linear_logit = reduce_sum(sparse_input, axis=-1, keep_dims=False) + self.dense(dense_input)
         if self.use_bias:
             linear_logit += self.bias

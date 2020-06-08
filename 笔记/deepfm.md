@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-04-15 13:16:08
- * @LastEditTime: 2020-06-08 17:35:39
+ * @LastEditTime: 2020-06-08 18:03:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /DeepCTR/视频笔记/deepfm.md
@@ -30,6 +30,9 @@ dnn部分和linear部分都调用了input_from_feature_columns， 而input_from_
             2. sparse feature展开成onehot向量，进行全连接？？？
                 
                 1. 在deepctr中，线性层并不是使用onehot进行全连接的方式进行计算，而是使用了一个新的（不与fm和dnn共享）embedding矩阵，孰强孰弱不知道
+
+                    1. dense feature concat之后，做了layer.dense全连接
+                    2. sparse featrue也维护一套embeddign矩阵，但是每次lookup之后，只是把所有的embedidng向量累加为标量，意义是什么？？反而会增加很多的参数量
 
     2. interaction
 

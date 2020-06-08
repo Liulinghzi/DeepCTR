@@ -187,6 +187,7 @@ def get_linear_logit(features, feature_columns, units=1, use_bias=False, init_st
 
     linear_emb_list = [input_from_feature_columns(
         features, feature_columns, l2_reg, init_std, seed, prefix=prefix + str(i))[0] for i in range(units)]
+        # 把sparse feature 映射到不同的空间中
 
     _, dense_input_list = input_from_feature_columns(
         features, feature_columns, l2_reg, init_std, seed, prefix=prefix)
@@ -195,6 +196,9 @@ def get_linear_logit(features, feature_columns, units=1, use_bias=False, init_st
     for i in range(units):
 
         if len(linear_emb_list[0]) > 0 and len(dense_input_list) > 0:
+            # linear_emb_list的形状是[units, num_features, embedding_dims]
+            # linear_emb_list[i]的形状是[num_features, embedding_dims]            
+            # sparse_input为concat之后的结果是[num_features * embedding_dims]
             sparse_input = concat_func(linear_emb_list[i])
             dense_input = concat_func(dense_input_list)
             linear_logit = Linear(l2_reg, mode=2, use_bias=use_bias)(
