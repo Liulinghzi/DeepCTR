@@ -11,8 +11,8 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 
+from deepctr.inputs import SparseFeat, VarLenSparseFeat, get_feature_names
 from deepctr.models import DeepFM
-from deepctr.inputs import SparseFeat, VarLenSparseFeat,get_feature_names
 
 
 def split(x):
@@ -22,6 +22,7 @@ def split(x):
             # Notice : input value 0 is a special "padding",so we do not use 0 to encode valid feature for sequence input
             key2index[key] = len(key2index) + 1
     return list(map(lambda x: key2index[x], key_ans))
+
 
 if __name__ == "__main__":
     data = pd.read_csv("./DeepCTR/examples/movielens_sample.txt")
@@ -44,30 +45,32 @@ if __name__ == "__main__":
 
     # 2.count #unique features for each sparse field and generate feature config for sequence feature
 
-    fixlen_feature_columns = [SparseFeat(feat, data[feat].nunique(),embedding_dim=4)
-                        for feat in sparse_features]
+    fixlen_feature_columns = [SparseFeat(feat, data[feat].nunique(), embedding_dim=4)
+                              for feat in sparse_features]
 
     use_weighted_sequence = False
     if use_weighted_sequence:
-        varlen_feature_columns = [VarLenSparseFeat('genres', maxlen= max_len,vocabulary_size=len(
-            key2index) + 1,embedding_dim=4, combiner='mean',weight_name='genres_weight')]  # Notice : value 0 is for padding for sequence input feature
+        varlen_feature_columns = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
+            key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
+                                                   weight_name='genres_weight')]  # Notice : value 0 is for padding for sequence input feature
     else:
-        varlen_feature_columns = [VarLenSparseFeat('genres', maxlen=max_len,vocabulary_size= len(
-            key2index) + 1,embedding_dim=4, combiner='mean',weight_name=None)]  # Notice : value 0 is for padding for sequence input feature
+        varlen_feature_columns = [VarLenSparseFeat(SparseFeat('genres', vocabulary_size=len(
+            key2index) + 1, embedding_dim=4), maxlen=max_len, combiner='mean',
+                                                   weight_name=None)]  # Notice : value 0 is for padding for sequence input feature
 
     linear_feature_columns = fixlen_feature_columns + varlen_feature_columns
     dnn_feature_columns = fixlen_feature_columns + varlen_feature_columns
 
-    feature_names = get_feature_names(linear_feature_columns+dnn_feature_columns)
-
+    feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
 
     # 3.generate input data for model
-    model_input = {name:data[name].values for name in sparse_features}#
+    model_input = {name: data[name] for name in sparse_features}  #
+    model_input["genres"] = genres_list
+    model_input["genres_weight"] = np.random.randn(data.shape[0], max_len, 1)
 
     # 4.Define Model,compile and train
-    model = DeepFM(linear_feature_columns,dnn_feature_columns,task='regression')
+    model = DeepFM(linear_feature_columns, dnn_feature_columns, task='regression')
 
     model.compile("adam", "mse", metrics=['mse'], )
     history = model.fit(model_input, data[target].values,
                         batch_size=256, epochs=10, verbose=2, validation_split=0.2, )
-    print(model.predict(model_input))

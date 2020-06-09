@@ -1,3 +1,11 @@
+'''
+@Author: your name
+@Date: 2020-04-09 18:11:17
+@LastEditTime: 2020-06-08 18:09:28
+@LastEditors: Please set LastEditors
+@Description: In User Settings Edit
+@FilePath: /DeepCTR/deepctr/models/fnn.py
+'''
 # -*- coding:utf-8 -*-
 """
 Author:
@@ -38,7 +46,7 @@ def FNN(linear_feature_columns, dnn_feature_columns, dnn_hidden_units=(128, 128)
 
     sparse_embedding_list, dense_value_list = input_from_feature_columns(features, dnn_feature_columns,
                                                                          l2_reg_embedding, init_std, seed)
-
+    
     linear_logit = get_linear_logit(features, linear_feature_columns, init_std=init_std, seed=seed, prefix='linear',
                                     l2_reg=l2_reg_linear)
 
