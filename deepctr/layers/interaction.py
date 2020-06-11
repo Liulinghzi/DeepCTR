@@ -508,6 +508,10 @@ class InnerProductLayer(Layer):
         row = []
         col = []
         num_inputs = len(embed_list)
+        # 一共n个特征，每个特征是一个embedding   [bs, dim], 
+        # 对多个特征concat，案例来说是[bs, dim * n]
+        # 上述错误
+        # 每一个embedding应该是是[bs, 1, dim]
 
         for i in range(num_inputs - 1):
             for j in range(i + 1, num_inputs):

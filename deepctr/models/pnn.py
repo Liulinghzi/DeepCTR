@@ -1,3 +1,11 @@
+'''
+@Author: your name
+@Date: 2020-06-09 09:58:54
+@LastEditTime: 2020-06-09 14:37:44
+@LastEditors: Please set LastEditors
+@Description: In User Settings Edit
+@FilePath: /DeepCTR/deepctr/models/pnn.py
+'''
 # -*- coding:utf-8 -*-
 """
 Author:
@@ -51,6 +59,8 @@ def PNN(dnn_feature_columns, dnn_hidden_units=(128, 128), l2_reg_embedding=1e-5,
     # ipnn deep input
     linear_signal = tf.keras.layers.Reshape(
         [sum(map(lambda x:int(x.shape[-1]) ,sparse_embedding_list))])(concat_func(sparse_embedding_list))
+    # signal这个命名可以学一下
+    # 不知道product的形状是什么样的，所以不知道这个reshape到底要干嘛
 
     if use_inner and use_outter:
         deep_input = tf.keras.layers.Concatenate()(

@@ -1,7 +1,7 @@
 '''
 @Author: your name
 @Date: 2020-04-09 18:11:17
-@LastEditTime: 2020-04-26 15:53:17
+@LastEditTime: 2020-06-10 13:47:02
 @LastEditors: Please set LastEditors
 @Description: In User Settings Edit
 @FilePath: /DeepCTR/examples/run_multivalue_movielens.py
@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+import tensorflow as tf
 
 from deepctr.inputs import SparseFeat, VarLenSparseFeat, get_feature_names
 from deepctr.models import DeepFM
@@ -72,5 +73,7 @@ if __name__ == "__main__":
     model = DeepFM(linear_feature_columns, dnn_feature_columns, task='regression')
 
     model.compile("adam", "mse", metrics=['mse'], )
+
+    tensorboard_callback = tf.keras.callbacks.TensorBoard()
     history = model.fit(model_input, data[target].values,
-                        batch_size=256, epochs=10, verbose=2, validation_split=0.2, )
+                        batch_size=256, epochs=10, verbose=2, validation_split=0.2, callbacks=[tensorboard_callback])
