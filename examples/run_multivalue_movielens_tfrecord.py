@@ -1,7 +1,7 @@
 '''
 @Author: your name
 @Date: 2020-04-09 18:11:17
-@LastEditTime: 2020-06-11 14:23:02
+@LastEditTime: 2020-06-11 15:16:25
 @LastEditors: Please set LastEditors
 @Description: In User Settings Edit
 @FilePath: /DeepCTR/examples/run_multivalue_movielens.py
@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import tensorflow as tf
+tf.compat.v1.enable_eager_execution()
+
 import sys
 import os
 sys.path.append('/Users/liulingzhi5/Desktop/code learn/DeepCTR')
@@ -53,21 +55,22 @@ if __name__ == "__main__":
 
     feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
 
-    model = DeepFM(linear_feature_columns, dnn_feature_columns, dnn_hidden_units=[4,4], task='binary')
+    model = DeepFM(linear_feature_columns, dnn_feature_columns, dnn_hidden_units=[64,64], task='binary')
 
     model.compile("adam", "binary_crossentropy", metrics=['accuracy'], )
 
-    tensorboard_callback = tf.keras.callbacks.TensorBoard()
-    train_input_fn = tfrecord_to_fn('/Users/liulingzhi5/Desktop/code learn/DeepCTR/heart_train', dense_feature_names=dense_feature_names, sparse_feature_names=sparse_feature_names, label=label, mode=tf.estimator.ModeKeys.TRAIN)
-    val_input_fn = tfrecord_to_fn('/Users/liulingzhi5/Desktop/code learn/DeepCTR/heart_val', dense_feature_names=dense_feature_names, sparse_feature_names=sparse_feature_names, label=label, mode=tf.estimator.ModeKeys.EVAL)
-    pred_input_fn = tfrecord_to_fn('/Users/liulingzhi5/Desktop/code learn/DeepCTR/heart_val', dense_feature_names=dense_feature_names, sparse_feature_names=sparse_feature_names, label=None, mode=tf.estimator.ModeKeys.PREDICT)
+    train_input_fn = tfrecord_to_fn(os.path.join(save_dir, 'train_tfrecord'), dense_feature_names=dense_feature_names, sparse_feature_names=sparse_feature_names, label=label, mode=tf.estimator.ModeKeys.TRAIN)
+    val_input_fn = tfrecord_to_fn(os.path.join(save_dir, 'val_tfrecord'), dense_feature_names=dense_feature_names, sparse_feature_names=sparse_feature_names, label=label, mode=tf.estimator.ModeKeys.EVAL)
+    pred_input_fn = tfrecord_to_fn(os.path.join(save_dir, 'test_tfrecord'), dense_feature_names=dense_feature_names, sparse_feature_names=sparse_feature_names, label=None, mode=tf.estimator.ModeKeys.PREDICT)
     train_datasets = train_input_fn()
     val_datasets = val_input_fn()
     pred_datasets = pred_input_fn()
-        
-    history = model.fit(train_datasets, epochs=10, verbose=1)
+ 
+    tensorboard_callback = tf.keras.callbacks.TensorBoard()
+    earlystop_callback = tf.keras.callbacks.EarlyStopping('val_loss', patience=10)
+    # 存在版本问题，只能在eager模式使用validation_data    
+    history = model.fit(train_datasets, epochs=1000, verbose=1, validation_data=val_datasets, callbacks=[tensorboard_callback, earlystop_callback])
+    #
     print('train finish')
-    res = model.evaluate(val_datasets)
-    print(res)
-    res = model.predict(pred_datasets)
-    print(res)
+    # res = model.predict(pred_datasets)
+    # print(res)
